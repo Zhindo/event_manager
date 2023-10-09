@@ -1,5 +1,18 @@
 require 'csv'
 
+def clean_zipcode(zipcode)
+    if zipcode.nil?
+        zipcode = '00000'
+    elsif zipcode.length < 5
+        zipcode = zipcode.rjust(5, '0')
+    elsif zipcode.length > 5
+        zipcode = zipcode[0..4]
+    else
+        zipcode
+    end
+end
+
+
 puts 'Event Manager Initialized!'
 
 contents = CSV.open('event_attendees.csv', 
@@ -11,16 +24,7 @@ contents.each do |row|
     name = row[:first_name]
     zipcode = row[:zipcode]
 
-    # If the zip code is exactly five digits, assume that it is ok
-    # If the zip code is more than five digits, truncate it to the first five digits
-    # If the zip code is less than five digits, add zeros to the front until it becomes five digits
-    if zipcode.nil?
-        zipcode = '00000'
-    elsif zipcode.length < 5
-        zipcode = zipcode.rjust(5, '0')
-    elsif zipcode.length > 5
-        zipcode = zipcode[0..4]
-    end
+    zipcode = clean_zipcode(row[:zipcode])
 
 
     puts "#{name} #{zipcode}"
