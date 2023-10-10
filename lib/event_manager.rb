@@ -2,8 +2,7 @@ require 'csv'
 
 require 'google/apis/civicinfo_v2'
 
-
-
+require 'erb'
 
 
 def clean_zipcode(zipcode)
@@ -17,16 +16,11 @@ def legislators_by_zipcode(zip)
 
 
     begin
-        legislators = civic_info.representative_info_by_address(
+        civic_info.representative_info_by_address(
         address: zip,
         levels: 'country', 
         roles: ['legislatorUpperBody', 'legislatorLowerBody']
-    )
-        legislators = legislators.officials
-
-        legislator_names = legislators.map(&:name)
-
-        legislator_names.join(", ")
+        ).officials
     rescue
         'You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
     end
@@ -41,23 +35,31 @@ contents = CSV.open('event_attendees.csv',
     header_converters: :symbol
 )
 
+template_letter = File.read('form_letter.erb')
+
+erb_template = ERB.new template_letter
+
+
 contents.each do |row|
+
+    id = row[0]
+
     name = row[:first_name]
+
     zipcode = row[:zipcode]
 
     zipcode = clean_zipcode(row[:zipcode])
 
     legislators = legislators_by_zipcode(zipcode)
 
-    puts "#{name} #{zipcode} #{legislators}"
+    form_letter = erb_template.result(binding)
+
+    Dir.mkdir('output') unless Dir.exist?('output')
+
+    filename = "output/thanks#{id}.html"
+
+    File.open(filename, 'w') do |file|
+        file.puts form_letter
+    end
 end
 
-
-# lines = File.readlines('event_attendees.csv')
-
-# lines.each_with_index do |line, index|
-#     next if index == 0
-#     columns = line.split(',')
-#     first_name = columns[2]
-#     puts first_name
-# end
