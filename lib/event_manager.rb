@@ -39,6 +39,29 @@ def save_thank_you_letter(id, form_letter)
 
 end
 
+def clean_phone_numbers(number)
+
+    number.gsub!("(", "")
+    number.gsub!(")", "") 
+    number.gsub!("-", "")
+    number.gsub!(".", "")
+    number.gsub!(" ", "")
+    
+    if number.length == 10
+        number
+    elsif number.length < 10
+        number = '0000000000'
+    elsif number.length == 11 && number[0] == '1'
+        number.slice!(0)
+        number
+    elsif number.length == 11 && number[0] != '1'
+        number = '0000000000'
+    else
+        number = '0000000000'
+    end
+
+end
+
 puts 'Event Manager Initialized!'
 
 contents = CSV.open('event_attendees.csv', 
@@ -57,14 +80,20 @@ contents.each do |row|
 
     name = row[:first_name]
 
-    zipcode = row[:zipcode]
+    # zipcode = row[:zipcode]
 
-    zipcode = clean_zipcode(row[:zipcode])
+    # zipcode = clean_zipcode(row[:zipcode])
 
-    legislators = legislators_by_zipcode(zipcode)
+    # legislators = legislators_by_zipcode(zipcode)
 
-    form_letter = erb_template.result(binding)
+    # form_letter = erb_template.result(binding)
 
-    save_thank_you_letter(id, form_letter)
+    # save_thank_you_letter(id, form_letter)
+    
+    number = row[5]
+
+    number = clean_phone_numbers(number)
+
+    puts number
 end
 
